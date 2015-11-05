@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head th:fragment="head">
+    <title layout:title-pattern="WEINFREUNDE - $CONTENT_TITLE">RECOMMENDER</title>
+    <meta charset="utf-8"/>
+    <meta name="accept-language" th:content="${#locale.language}"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link th:href="@{/css/bootstrap.css}" rel="stylesheet"/>
+    <script th:src="@{/js/require.js}"></script>
+    <script th:src="@{/js/jquery-1.11.1.min.js}"></script>
+</head>
+
+<body>
+<div th:if="${success != null}" class="alert alert-success" role="alert">
+    <span class="sr-only">Success:</span>
+    <span th:text="${success}">message</span>
+</div>
+<div th:if="${error != null}" class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Error:</span>
+    <span th:text="${error}">message</span>
+</div>
+<h2>Happiness Keywords</h2>
+
+<div>
+    <form th:action="@{/fileUpload}" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="fileUploadInput">Happiness results</label>
+            <input type="file" class="form-control" id="fileUploadInput" name="myFile"/>
+        </div>
+        <input type="submit" class="btn btn-default" value="Auswertung hochladen"/>
+    </form>
+</div>
+
+<div th:if="${csvPresent}">
+    <form th:action="@{/fileDownload}" method="get">
+        <input type="submit" value="Auswertung mit Suggestions herunterladen"/>
+    </form>
+</div>
+
+<div>
+    <form th:action="@{/suggestTag}" method="get">
+        <input th:value="${comment}" type="text" name="comment"/>
+        <input type="submit" value="Ausprobieren!"/>
+    </form>
+</div>
+<div th:if="${suggestion != null}" class="alert alert-success" role="alert">
+    <span class="sr-only">Tag suggestion:</span>
+    <span th:text="${suggestion}">message</span>
+</div>
+
+</body>
+</html>
