@@ -1,6 +1,8 @@
 package ste.wel.happiness;
 
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.CoreDescriptor;
 import org.springframework.context.annotation.Bean;
@@ -28,5 +30,10 @@ public class SolrConfig {
         final CoreDescriptor coreDescriptor = new CoreDescriptor(container, CORE_NAME, ".");
         container.create(coreDescriptor);
         return new EmbeddedSolrServer(container, CORE_NAME);
+    }
+
+//    @Bean
+    public SolrClient localSolr(){
+        return  new HttpSolrClient("http://localhost:8983/solr/test_core");
     }
 }

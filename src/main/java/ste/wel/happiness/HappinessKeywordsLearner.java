@@ -1,8 +1,8 @@
 package ste.wel.happiness;
 
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
@@ -24,12 +24,13 @@ public class HappinessKeywordsLearner {
     private static final Logger LOG = LoggerFactory.getLogger(HappinessKeywordsLearner.class);
 
     @Autowired
-    private EmbeddedSolrServer solrServer;
+    private SolrClient solrServer;
     private Map<String, Long> tagFrequency = new HashMap<>();
 
-    public String suggestTag(String comment, final String group) {
+    public String suggestTag(String comment) {
         try {
-            String id = addToIndex(comment, group);
+            String id = addToIndex(comment);
+            LOG.info("id: " + id);
             final List<String> stringTagStream = queryTags(id);
             final String tagSuggestion = stringTagStream.stream()
                     .collect(Collectors.groupingBy(o -> o, Collectors.counting()))
@@ -40,10 +41,15 @@ public class HappinessKeywordsLearner {
                     .orElse("");
 
             LOG.info("Suggested '" + tagSuggestion + "' for text '" + comment + "'");
+            removeFromIndex(id);
             return tagSuggestion;
         } catch (SolrServerException | IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    private void removeFromIndex(final String id) throws IOException, SolrServerException {
+        solrServer.deleteById(id);
     }
 
     private List<String> queryTags(final String id) throws SolrServerException, IOException {
@@ -65,12 +71,11 @@ public class HappinessKeywordsLearner {
                 .collect(Collectors.toList());
     }
 
-    private String addToIndex(final String comment, final String group) throws IOException, SolrServerException {
+    private String addToIndex(final String comment) throws IOException, SolrServerException {
         String id = UUID.randomUUID().toString();
         SolrInputDocument queryDoc = new SolrInputDocument();
 
         queryDoc.addField("text", comment);
-        queryDoc.addField("group", group);
         queryDoc.addField("id", id);
 
         solrServer.add(queryDoc);
@@ -117,7 +122,6 @@ public class HappinessKeywordsLearner {
         doc.addField("id", id);
         doc.addField("text", comment.getComment());
         doc.addField("tag", comment.getTags());
-        doc.addField("group", comment.getGroup());
         return doc;
     }
 }

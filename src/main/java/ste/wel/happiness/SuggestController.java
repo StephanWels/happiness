@@ -27,7 +27,7 @@ public class SuggestController {
     public ModelAndView suggestTag(@RequestParam String comment) throws IOException, SolrServerException {
         LOG.info("suggesting tag");
 
-        final String suggestedTag = keywordsLearner.suggestTag(comment, "good");
+        final String suggestedTag = keywordsLearner.suggestTag(comment);
 
         final ModelAndView modelAndView = new ModelAndView(PATH);
         modelAndView.addObject("csvPresent", inputFileProvider.getCurrentInputFile().isPresent());

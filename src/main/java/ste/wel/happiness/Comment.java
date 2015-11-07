@@ -5,12 +5,10 @@ import java.util.List;
 public class Comment {
     String comment;
     List<String> tags;
-    String group;
 
-    public Comment(final String comment, List<String> tags, String group) {
+    public Comment(final String comment, List<String> tags) {
         this.comment = comment;
         this.tags = tags;
-        this.group = group;
     }
 
     public String getComment() {
@@ -21,7 +19,4 @@ public class Comment {
         return tags;
     }
 
-    public String getGroup() {
-        return group;
-    }
 }

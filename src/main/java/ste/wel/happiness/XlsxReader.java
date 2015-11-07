@@ -32,11 +32,11 @@ public class XlsxReader {
         rowIterator.next();
         rowIterator.forEachRemaining(row -> content.add(toStringArray(row, "good")));
 
-        sh = wb.getSheet("Daten Was verändern");
-        rowIterator = sh.rowIterator();
-        //skip header
-        rowIterator.next();
-        rowIterator.forEachRemaining(row -> content.add(toStringArray(row, "bad")));
+//        sh = wb.getSheet("Daten Was verändern");
+//        rowIterator = sh.rowIterator();
+//        //skip header
+//        rowIterator.next();
+//        rowIterator.forEachRemaining(row -> content.add(toStringArray(row, "bad")));
 
         return new HappinessIndexInputFile(null, content, HappinessIndexInputFile.Type.XLSX, wb, originalFilename);
     }
@@ -47,7 +47,6 @@ public class XlsxReader {
         stringArray[1]= Optional.ofNullable(row.getCell(1)).map(Cell::toString).orElse("");
         stringArray[2]= Optional.ofNullable(row.getCell(2)).map(Cell::toString).orElse("");
         stringArray[3]= Optional.ofNullable(row.getCell(3)).map(Cell::toString).orElse("");
-        stringArray[4] = group;
         return stringArray;
     }
 }

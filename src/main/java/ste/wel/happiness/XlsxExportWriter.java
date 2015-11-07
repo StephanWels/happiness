@@ -27,25 +27,25 @@ public class XlsxExportWriter {
         Iterator<Row> rowIterator = sh.rowIterator();
         Row header = rowIterator.next();
         header.getCell(4, Row.CREATE_NULL_AS_BLANK).setCellValue("Schlagwort Vorschlag");
-        rowIterator.forEachRemaining(row -> suggestForRow(row, "good"));
+        rowIterator.forEachRemaining(row -> suggestForRow(row));
 
 
-        sh = wb.getSheet("Daten Was verändern");
-        rowIterator = sh.rowIterator();
-        header = rowIterator.next();
-        header.getCell(4, Row.CREATE_NULL_AS_BLANK).setCellValue("Schlagwort Vorschlag");
-        rowIterator.forEachRemaining(row -> suggestForRow(row, "bad"));
+//        sh = wb.getSheet("Daten Was verändern");
+//        rowIterator = sh.rowIterator();
+//        header = rowIterator.next();
+//        header.getCell(4, Row.CREATE_NULL_AS_BLANK).setCellValue("Schlagwort Vorschlag");
+//        rowIterator.forEachRemaining(row -> suggestForRow(row, "bad"));
 
         wb.write(outputStream);
         wb.close();
     }
 
-    private void suggestForRow(final Row row, final String group) {
+    private void suggestForRow(final Row row) {
         if (row.getCell(idxTag, Row.RETURN_BLANK_AS_NULL) == null &&
                 row.getCell(idxText, Row.RETURN_BLANK_AS_NULL) != null) {
             String text = row.getCell(idxText, Row.RETURN_BLANK_AS_NULL).toString();
             row.getCell(idxSuggestion, Row.CREATE_NULL_AS_BLANK)
-                    .setCellValue(happinessKeywordsLearner.suggestTag(text, group));
+                    .setCellValue(happinessKeywordsLearner.suggestTag(text));
         }
     }
 }

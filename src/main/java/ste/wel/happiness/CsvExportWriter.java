@@ -31,7 +31,7 @@ public class CsvExportWriter {
             String text = line[idxText];
             boolean needsSuggestion = line[idxTag].trim().isEmpty();
             if (needsSuggestion) {
-                String tagSuggestion = happinessKeywordsLearner.suggestTag(text, "good");
+                String tagSuggestion = happinessKeywordsLearner.suggestTag(text);
                 outputLine[outputLine.length - 1] = tagSuggestion;
             } else {
                 outputLine[outputLine.length-1] = StringUtils.EMPTY;

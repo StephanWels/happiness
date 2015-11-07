@@ -55,7 +55,7 @@ public class HappinessIndexInputFile {
         return content.stream()
                 .filter(values -> values.length > 3)
                 .filter(values -> values[idxTag].trim().length() > 0)
-                .map(values -> new Comment(values[2], Arrays.asList(values[idxTag].split("\\s*,\\s*")), values[4]))
+                .map(values -> new Comment(values[2], Arrays.asList(values[idxTag].split("\\s*,\\s*"))))
                 .collect(Collectors.toList());
     }
 
@@ -71,7 +71,7 @@ public class HappinessIndexInputFile {
         return content.stream()
                 .filter(values -> values.length > 3)
                 .filter(values -> values[idxTag].trim().length() == 0)
-                .map(values -> new Comment(values[2], Arrays.asList(values[idxTag].split("\\s*,\\s*")), values[4]))
+                .map(values -> new Comment(values[2], Arrays.asList(values[idxTag].split("\\s*,\\s*"))))
                 .collect(Collectors.toList());
     }
 
