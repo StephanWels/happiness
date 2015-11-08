@@ -4,6 +4,7 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.MoreLikeThisParams;
@@ -18,12 +19,13 @@ public class HappinessKeywordsLearner {
 
     private static final Logger LOG = LoggerFactory.getLogger(HappinessKeywordsLearner.class);
     private SolrClient solrClient;
+    private final ConfigurationProvider configurationProvider;
     private Map<String, Long> tagFrequency = new HashMap<>();
 
-    public HappinessKeywordsLearner(final SolrClient solrClient){
+    public HappinessKeywordsLearner(final SolrClient solrClient, final ConfigurationProvider configurationProvider) {
         this.solrClient = solrClient;
+        this.configurationProvider = configurationProvider;
     }
-
 
     public String suggestTag(String comment) {
         try {
@@ -48,6 +50,7 @@ public class HappinessKeywordsLearner {
 
     private void removeFromIndex(final String id) throws IOException, SolrServerException {
         solrClient.deleteById(id);
+        solrClient.commit();
     }
 
     private List<String> queryTags(final String id) throws SolrServerException, IOException {
@@ -55,9 +58,9 @@ public class HappinessKeywordsLearner {
         query.setRequestHandler("/mlt");
         query.setQuery("id:" + id);
         query.set(MoreLikeThisParams.SIMILARITY_FIELDS, "text");
-        query.set(MoreLikeThisParams.MIN_TERM_FREQ, 1);
-        query.set(MoreLikeThisParams.MIN_DOC_FREQ, 2);
-        query.set("rows", 9);
+        query.set(MoreLikeThisParams.MIN_TERM_FREQ, configurationProvider.getMinTermFrequency());
+        query.set(MoreLikeThisParams.MIN_DOC_FREQ, configurationProvider.getMinDocumentFrequency());
+        query.set("rows", configurationProvider.getK());
         final QueryResponse response = solrClient.query(query);
         return Optional.ofNullable(response.getResults()).orElse(new SolrDocumentList())
                 .stream()
@@ -121,5 +124,59 @@ public class HappinessKeywordsLearner {
         doc.addField("text", comment.getComment());
         doc.addField("tag", comment.getTags());
         return doc;
+    }
+
+    public List<String> getTagsForId(String id) {
+        try {
+            return solrClient.getById(id)
+                    .getFieldValues("tag").stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toList());
+        } catch (SolrServerException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Collections.emptyList();
+    }
+
+    public String getTagSuggestionForId(String id) {
+        String suggestion = null;
+        try {
+            final SolrDocument document;
+            document = solrClient.getById(id);
+            solrClient.deleteById(id);
+            solrClient.commit();
+            final String text = (String) document.getFieldValue("text");
+            final List<String> tags = (List<String>) document.getFieldValue("tag");
+            suggestion = suggestTag(text);
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", id);
+            doc.addField("text", text);
+            doc.addField("tag", tags);
+            solrClient.add(doc);
+            solrClient.commit();
+        } catch (SolrServerException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return suggestion;
+    }
+
+    public List<String> getIds() {
+        final SolrQuery solrQuery = new SolrQuery("*:*");
+        solrQuery.setParam("fl", "id");
+        solrQuery.setRows(9999999);
+        try {
+            return solrClient.query(solrQuery).getResults().stream()
+                    .map(solrDocument -> (String) solrDocument.getFieldValue("id"))
+                    .collect(Collectors.toList());
+        } catch (SolrServerException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Collections.emptyList();
     }
 }

@@ -1,4 +1,4 @@
-package ste.wel.happiness;
+package ste.wel.happiness.Controller;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -6,6 +6,10 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import ste.wel.happiness.CsvExportWriter;
+import ste.wel.happiness.HappinessIndexInputFile;
+import ste.wel.happiness.InputFileProvider;
+import ste.wel.happiness.XlsxExportWriter;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package ste.wel.happiness;
+package ste.wel.happiness.Controller;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
@@ -9,6 +9,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import ste.wel.happiness.CommonModelAndViewEnhancer;
+import ste.wel.happiness.HappinessKeywordsLearner;
+import ste.wel.happiness.InputFileProvider;
 
 import java.io.IOException;
 
@@ -25,6 +28,9 @@ public class SuggestController {
     @Autowired
     InputFileProvider inputFileProvider;
 
+    @Autowired
+    CommonModelAndViewEnhancer commonModelAndViewEnhancer;
+
     @RequestMapping("/suggestTag")
     public ModelAndView suggestTag(@RequestParam String comment) throws IOException, SolrServerException {
         LOG.info("suggesting tag");
@@ -39,7 +45,7 @@ public class SuggestController {
             modelAndView.addObject("suggestion", suggestedTag);
         }
         modelAndView.addObject("comment", comment);
-        return modelAndView;
+        return commonModelAndViewEnhancer.addCommonParameters(modelAndView);
     }
 
 }

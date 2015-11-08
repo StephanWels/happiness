@@ -1,4 +1,4 @@
-package ste.wel.happiness;
+package ste.wel.happiness.Controller;
 
 import au.com.bytecode.opencsv.CSVReader;
 import org.slf4j.Logger;
@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
+import ste.wel.happiness.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -39,6 +40,9 @@ public class FileUploadController {
     @Autowired
     XlsxReader xlsxReader;
 
+    @Autowired
+    CommonModelAndViewEnhancer commonModelAndViewEnhancer;
+
     @RequestMapping(value = "/fileUpload", method = RequestMethod.POST)
     public ModelAndView importParse(@RequestParam("myFile") MultipartFile myFile) throws Exception {
         final ModelAndView modelAndView = new ModelAndView(PATH);
@@ -47,20 +51,20 @@ public class FileUploadController {
             final HappinessIndexInputFile happinessIndexInputFile = inputFileProvider.getCurrentInputFile().get();
             modelAndView.addObject("csvPresent", true);
             modelAndView.addObject("success", statusMessage(happinessIndexInputFile));
-            return modelAndView;
+            return commonModelAndViewEnhancer.addCommonParameters(modelAndView);
         } else if (myFile.getOriginalFilename().endsWith(".xlsx")) {
             uploadXlsx(myFile);
             final HappinessIndexInputFile happinessIndexInputFile = inputFileProvider.getCurrentInputFile().get();
             modelAndView.addObject("csvPresent", true);
             modelAndView.addObject("success", statusMessage(happinessIndexInputFile));
-            return modelAndView;
+            return commonModelAndViewEnhancer.addCommonParameters(modelAndView);
         } else if (myFile.getOriginalFilename().isEmpty()) {
             modelAndView.addObject("csvPresent", inputFileProvider.getCurrentInputFile().isPresent());
             modelAndView.addObject("error", "Please select a file first.");
-            return modelAndView;
+            return commonModelAndViewEnhancer.addCommonParameters(modelAndView);
         }
         modelAndView.addObject("error", "Unsupported file type.");
-        return modelAndView;
+        return commonModelAndViewEnhancer.addCommonParameters(modelAndView);
     }
 
     private String statusMessage(final HappinessIndexInputFile happinessIndexInputFile){

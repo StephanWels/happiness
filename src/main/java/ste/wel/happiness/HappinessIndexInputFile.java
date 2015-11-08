@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 public class HappinessIndexInputFile {
 
-    enum Type {
+    public enum Type {
         CSV,
         XLSX
     }

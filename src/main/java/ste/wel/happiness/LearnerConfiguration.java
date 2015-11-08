@@ -11,14 +11,14 @@ public class LearnerConfiguration {
 
     @Bean(name = "goodLearner")
     @Scope("singleton")
-    public HappinessKeywordsLearner goodLearner(@Qualifier("goodSolr") SolrClient solrClient){
-        return new HappinessKeywordsLearner(solrClient);
+    public HappinessKeywordsLearner goodLearner(@Qualifier("goodSolr") SolrClient solrClient, ConfigurationProvider config){
+        return new HappinessKeywordsLearner(solrClient, config);
     }
 
     @Bean(name = "badLearner")
     @Scope("singleton")
-    public HappinessKeywordsLearner badLearner(@Qualifier("badSolr") SolrClient solrClient){
-        return new HappinessKeywordsLearner(solrClient);
+    public HappinessKeywordsLearner badLearner(@Qualifier("badSolr") SolrClient solrClient, ConfigurationProvider config){
+        return new HappinessKeywordsLearner(solrClient, config);
     }
 
 }
