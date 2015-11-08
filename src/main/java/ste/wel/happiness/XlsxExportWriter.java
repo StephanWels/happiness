@@ -5,6 +5,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ public class XlsxExportWriter {
     private static final int idxSuggestion = 4;
 
     @Autowired
+    @Qualifier("goodLearner")
     HappinessKeywordsLearner happinessKeywordsLearner;
 
     public void writeExportToXlsx(final OutputStream outputStream, HappinessIndexInputFile inputCsv) throws IOException, SolrServerException {

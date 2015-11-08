@@ -4,6 +4,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +19,7 @@ public class SuggestController {
     private static final String PATH = "main";
 
     @Autowired
+    @Qualifier("goodLearner")
     HappinessKeywordsLearner keywordsLearner;
 
     @Autowired
@@ -31,7 +33,7 @@ public class SuggestController {
 
         final ModelAndView modelAndView = new ModelAndView(PATH);
         modelAndView.addObject("csvPresent", inputFileProvider.getCurrentInputFile().isPresent());
-        if (suggestedTag.isEmpty()){
+        if (suggestedTag.isEmpty()) {
             modelAndView.addObject("error", "Couldn't find any suitable tag.");
         } else {
             modelAndView.addObject("suggestion", suggestedTag);

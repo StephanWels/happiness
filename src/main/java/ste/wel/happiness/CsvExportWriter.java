@@ -4,6 +4,7 @@ import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -20,6 +21,7 @@ public class CsvExportWriter {
     private static final int idxTag = 3;
 
     @Autowired
+    @Qualifier("goodLearner")
     HappinessKeywordsLearner happinessKeywordsLearner;
 
     public void writeExportToCsv(final OutputStream outputStream, HappinessIndexInputFile inputCsv) throws IOException, SolrServerException {
@@ -34,7 +36,7 @@ public class CsvExportWriter {
                 String tagSuggestion = happinessKeywordsLearner.suggestTag(text);
                 outputLine[outputLine.length - 1] = tagSuggestion;
             } else {
-                outputLine[outputLine.length-1] = StringUtils.EMPTY;
+                outputLine[outputLine.length - 1] = StringUtils.EMPTY;
             }
             writer.writeNext(outputLine);
         }

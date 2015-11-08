@@ -9,23 +9,21 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.MoreLikeThisParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
-@Scope("singleton")
 public class HappinessKeywordsLearner {
 
     private static final Logger LOG = LoggerFactory.getLogger(HappinessKeywordsLearner.class);
-
-    @Autowired
-    private SolrClient solrServer;
+    private SolrClient solrClient;
     private Map<String, Long> tagFrequency = new HashMap<>();
+
+    public HappinessKeywordsLearner(final SolrClient solrClient){
+        this.solrClient = solrClient;
+    }
+
 
     public String suggestTag(String comment) {
         try {
@@ -49,7 +47,7 @@ public class HappinessKeywordsLearner {
     }
 
     private void removeFromIndex(final String id) throws IOException, SolrServerException {
-        solrServer.deleteById(id);
+        solrClient.deleteById(id);
     }
 
     private List<String> queryTags(final String id) throws SolrServerException, IOException {
@@ -60,7 +58,7 @@ public class HappinessKeywordsLearner {
         query.set(MoreLikeThisParams.MIN_TERM_FREQ, 1);
         query.set(MoreLikeThisParams.MIN_DOC_FREQ, 2);
         query.set("rows", 9);
-        final QueryResponse response = solrServer.query(query);
+        final QueryResponse response = solrClient.query(query);
         return Optional.ofNullable(response.getResults()).orElse(new SolrDocumentList())
                 .stream()
                 .flatMap(solrDocument -> Optional.ofNullable(solrDocument)
@@ -78,14 +76,14 @@ public class HappinessKeywordsLearner {
         queryDoc.addField("text", comment);
         queryDoc.addField("id", id);
 
-        solrServer.add(queryDoc);
-        solrServer.commit();
+        solrClient.add(queryDoc);
+        solrClient.commit();
         return id;
     }
 
     public void trainOnData(HappinessIndexInputFile inputCsv) throws Exception {
-        solrServer.deleteByQuery("*");
-        int deleteTime = solrServer.commit().getQTime();
+        solrClient.deleteByQuery("*");
+        int deleteTime = solrClient.commit().getQTime();
         System.out.println("Deleted training data in " + deleteTime + "ms.");
         Collection<SolrInputDocument> docs = new ArrayList<>();
         for (Comment comment : inputCsv.getTaggedComments()) {
@@ -96,8 +94,8 @@ public class HappinessKeywordsLearner {
             LOG.warn("Nothing to train on.");
             return;
         }
-        solrServer.add(docs);
-        int qTime = solrServer.commit().getQTime();
+        solrClient.add(docs);
+        int qTime = solrClient.commit().getQTime();
         System.out.println("Loaded training data in " + qTime + "ms.");
 
         calculateTagFrequencies();
@@ -110,7 +108,7 @@ public class HappinessKeywordsLearner {
         query.setQuery("*");
         query.setFacet(true);
         query.addFacetField("tag");
-        final QueryResponse response = solrServer.query(query);
+        final QueryResponse response = solrClient.query(query);
         Optional.ofNullable(response.getFacetField("tag"))
                 .ifPresent(facetField -> facetField.getValues()
                         .forEach(count -> tagFrequency.put(count.getName(), count.getCount())));

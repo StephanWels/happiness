@@ -4,6 +4,7 @@ import au.com.bytecode.opencsv.CSVReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -24,6 +25,7 @@ public class FileUploadController {
     public static final String PATH = "main";
 
     @Autowired
+    @Qualifier("goodLearner")
     HappinessKeywordsLearner happinessKeywordsLearner;
 
     @Autowired
@@ -57,7 +59,7 @@ public class FileUploadController {
     }
 
     private void uploadXlsx(final MultipartFile myFile) throws Exception {
-        HappinessIndexInputFile inputXlsx = xlsxReader.readInputFile(myFile.getInputStream(),  myFile.getOriginalFilename());
+        HappinessIndexInputFile inputXlsx = xlsxReader.readInputFile(myFile.getInputStream(), myFile.getOriginalFilename());
         inputFileProvider.setCurrentInputFile(inputXlsx);
         happinessKeywordsLearner.trainOnData(inputXlsx);
     }
@@ -75,6 +77,6 @@ public class FileUploadController {
         String[] header = csvReader.readNext();
         final List<String[]> allValues = csvReader.readAll();
         reader.close();
-        return new HappinessIndexInputFile(header, allValues, HappinessIndexInputFile.Type.CSV, null, fileName );
+        return new HappinessIndexInputFile(header, allValues, HappinessIndexInputFile.Type.CSV, null, fileName);
     }
 }
