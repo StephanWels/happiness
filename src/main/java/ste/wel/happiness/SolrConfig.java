@@ -17,9 +17,9 @@ import java.nio.file.attribute.FileAttribute;
 @Configuration
 public class SolrConfig {
 
+    private static final String CORE_NAME = "test_core";
     private static final String DATA_DIR_PROPERTY = "solr.data.dir";
     private static final String HOME = "solr-config/solr";
-    private static final String CORE_NAME = "test_core";
 
     @Bean(destroyMethod = "shutdown", name = "goodSolr")
     public EmbeddedSolrServer embeddedSolrGood() throws IOException {
@@ -38,7 +38,7 @@ public class SolrConfig {
         container.load();
         final CoreDescriptor coreDescriptor = new CoreDescriptor(container, CORE_NAME, ".");
         container.create(coreDescriptor);
-        return new EmbeddedSolrServer(container, CORE_NAME);
+        return new TempEmbeddedSolrServer(container, CORE_NAME, dataDirectory);
     }
 
     //    @Bean

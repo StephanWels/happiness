@@ -2,9 +2,7 @@ package ste.wel.happiness;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class HappinessIndexInputFile {
@@ -17,7 +15,7 @@ public class HappinessIndexInputFile {
     private static final int idxTag = 3;
 
     private String[] header;
-    private List<String[]> content;
+    private Map<Sheet, List<String[]>> content;
     private Type type;
     private XSSFWorkbook inputFile;
     private String inputFileName;
@@ -30,7 +28,7 @@ public class HappinessIndexInputFile {
         return Optional.ofNullable(inputFile);
     }
 
-    public HappinessIndexInputFile(final String[] header, final List<String[]> content, final Type type, final XSSFWorkbook inputFile,
+    public HappinessIndexInputFile(final String[] header, final Map<Sheet, List<String[]>> content, final Type type, final XSSFWorkbook inputFile,
                                    final String inputFileName) {
         this.header = header;
         this.content = content;
@@ -47,35 +45,23 @@ public class HappinessIndexInputFile {
         return header;
     }
 
-    public List<String[]> getContent() {
-        return content;
+    public List<String[]> getContent(Sheet sheet) {
+        return content.getOrDefault(sheet, Collections.emptyList());
     }
 
-    public List<Comment> getTaggedComments() {
-        return content.stream()
+    public List<Comment> getTaggedComments(Sheet sheet) {
+        return content.get(sheet).stream()
                 .filter(values -> values.length > 3)
                 .filter(values -> values[idxTag].trim().length() > 0)
                 .map(values -> new Comment(values[2], Arrays.asList(values[idxTag].split("\\s*,\\s*"))))
                 .collect(Collectors.toList());
     }
 
-    public int getNoTaggedComments() {
-        return getTaggedComments().size();
-    }
-
-    public int getSize() {
-        return content.size();
-    }
-
-    public List<Comment> getUntaggedComments() {
-        return content.stream()
+    public List<Comment> getUntaggedComments(Sheet sheet) {
+        return content.get(sheet).stream()
                 .filter(values -> values.length > 3)
                 .filter(values -> values[idxTag].trim().length() == 0)
                 .map(values -> new Comment(values[2], Arrays.asList(values[idxTag].split("\\s*,\\s*"))))
                 .collect(Collectors.toList());
-    }
-
-    public int getNoUntaggedComments() {
-        return getUntaggedComments().size();
     }
 }

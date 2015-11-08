@@ -20,34 +20,37 @@ public class XlsxExportWriter {
 
     @Autowired
     @Qualifier("goodLearner")
-    HappinessKeywordsLearner happinessKeywordsLearner;
+    HappinessKeywordsLearner goodLearner;
+
+    @Autowired
+    @Qualifier("badLearner")
+    HappinessKeywordsLearner badLearner;
 
     public void writeExportToXlsx(final OutputStream outputStream, HappinessIndexInputFile inputCsv) throws IOException, SolrServerException {
         XSSFWorkbook wb = inputCsv.getInputFile().get();
-        XSSFSheet sh = wb.getSheet("Daten Was ist gut");
 
-        Iterator<Row> rowIterator = sh.rowIterator();
-        Row header = rowIterator.next();
-        header.getCell(4, Row.CREATE_NULL_AS_BLANK).setCellValue("Schlagwort Vorschlag");
-        rowIterator.forEachRemaining(row -> suggestForRow(row));
-
-
-//        sh = wb.getSheet("Daten Was verändern");
-//        rowIterator = sh.rowIterator();
-//        header = rowIterator.next();
-//        header.getCell(4, Row.CREATE_NULL_AS_BLANK).setCellValue("Schlagwort Vorschlag");
-//        rowIterator.forEachRemaining(row -> suggestForRow(row, "bad"));
+        suggestForUntagged(wb, "Daten Was ist gut", goodLearner);
+        suggestForUntagged(wb, "Daten Was verändern", badLearner);
 
         wb.write(outputStream);
         wb.close();
     }
 
-    private void suggestForRow(final Row row) {
+    private void suggestForUntagged(final XSSFWorkbook wb, String sheetName, HappinessKeywordsLearner learner) {
+        XSSFSheet sh = wb.getSheet(sheetName);
+
+        Iterator<Row> rowIterator = sh.rowIterator();
+        Row header = rowIterator.next();
+        header.getCell(4, Row.CREATE_NULL_AS_BLANK).setCellValue("Schlagwort Vorschlag");
+        rowIterator.forEachRemaining(row -> suggestForRow(row, learner));
+    }
+
+    private void suggestForRow(final Row row, final HappinessKeywordsLearner learner) {
         if (row.getCell(idxTag, Row.RETURN_BLANK_AS_NULL) == null &&
                 row.getCell(idxText, Row.RETURN_BLANK_AS_NULL) != null) {
             String text = row.getCell(idxText, Row.RETURN_BLANK_AS_NULL).toString();
             row.getCell(idxSuggestion, Row.CREATE_NULL_AS_BLANK)
-                    .setCellValue(happinessKeywordsLearner.suggestTag(text));
+                    .setCellValue(learner.suggestTag(text));
         }
     }
 }

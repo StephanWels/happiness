@@ -81,12 +81,12 @@ public class HappinessKeywordsLearner {
         return id;
     }
 
-    public void trainOnData(HappinessIndexInputFile inputCsv) throws Exception {
+    public void trainOnData(List<Comment> comments) throws Exception {
         solrClient.deleteByQuery("*");
         int deleteTime = solrClient.commit().getQTime();
         System.out.println("Deleted training data in " + deleteTime + "ms.");
         Collection<SolrInputDocument> docs = new ArrayList<>();
-        for (Comment comment : inputCsv.getTaggedComments()) {
+        for (Comment comment : comments) {
             SolrInputDocument doc = toSolrInputDocument(comment);
             docs.add(doc);
         }

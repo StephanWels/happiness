@@ -28,7 +28,7 @@ public class CsvExportWriter {
         CSVWriter writer = new CSVWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), ',');
         writer.writeNext(augmentHeader(inputCsv.getHeader()));
 
-        for (String[] line : inputCsv.getContent()) {
+        for (String[] line : inputCsv.getContent(Sheet.GOOD)) {
             String[] outputLine = Arrays.copyOf(line, line.length + 1);
             String text = line[idxText];
             boolean needsSuggestion = line[idxTag].trim().isEmpty();

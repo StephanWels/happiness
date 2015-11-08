@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collections;
 import java.util.List;
 
 @Controller
@@ -26,7 +27,11 @@ public class FileUploadController {
 
     @Autowired
     @Qualifier("goodLearner")
-    HappinessKeywordsLearner happinessKeywordsLearner;
+    HappinessKeywordsLearner goodLearner;
+
+    @Autowired
+    @Qualifier("badLearner")
+    HappinessKeywordsLearner badLearner;
 
     @Autowired
     InputFileProvider inputFileProvider;
@@ -41,13 +46,13 @@ public class FileUploadController {
             uploadCsv(myFile);
             final HappinessIndexInputFile happinessIndexInputFile = inputFileProvider.getCurrentInputFile().get();
             modelAndView.addObject("csvPresent", true);
-            modelAndView.addObject("success", happinessIndexInputFile.getType() + " File uploaded. " + happinessIndexInputFile.getNoTaggedComments() + " tagged comments, " + happinessIndexInputFile.getNoUntaggedComments() + " untagged comments.");
+            modelAndView.addObject("success", statusMessage(happinessIndexInputFile));
             return modelAndView;
         } else if (myFile.getOriginalFilename().endsWith(".xlsx")) {
             uploadXlsx(myFile);
             final HappinessIndexInputFile happinessIndexInputFile = inputFileProvider.getCurrentInputFile().get();
             modelAndView.addObject("csvPresent", true);
-            modelAndView.addObject("success", happinessIndexInputFile.getType() + " File uploaded. " + happinessIndexInputFile.getNoTaggedComments() + " tagged comments, " + happinessIndexInputFile.getNoUntaggedComments() + " untagged comments.");
+            modelAndView.addObject("success", statusMessage(happinessIndexInputFile));
             return modelAndView;
         } else if (myFile.getOriginalFilename().isEmpty()) {
             modelAndView.addObject("csvPresent", inputFileProvider.getCurrentInputFile().isPresent());
@@ -58,16 +63,27 @@ public class FileUploadController {
         return modelAndView;
     }
 
+    private String statusMessage(final HappinessIndexInputFile happinessIndexInputFile){
+        final int taggedGood = happinessIndexInputFile.getTaggedComments(Sheet.GOOD).size();
+        final int taggedBad = happinessIndexInputFile.getTaggedComments(Sheet.BAD).size();
+        final int untaggedGood = happinessIndexInputFile.getUntaggedComments(Sheet.GOOD).size();
+        final int untaggedBad = happinessIndexInputFile.getUntaggedComments(Sheet.BAD).size();
+        final int tagged = taggedBad + taggedGood;
+        final int untagged = untaggedBad + untaggedGood;
+        return happinessIndexInputFile.getType() + " File uploaded. " + tagged + " tagged comments, " + untagged + " untagged comments.";
+    }
+
     private void uploadXlsx(final MultipartFile myFile) throws Exception {
         HappinessIndexInputFile inputXlsx = xlsxReader.readInputFile(myFile.getInputStream(), myFile.getOriginalFilename());
         inputFileProvider.setCurrentInputFile(inputXlsx);
-        happinessKeywordsLearner.trainOnData(inputXlsx);
+        goodLearner.trainOnData(inputXlsx.getTaggedComments(Sheet.GOOD));
+        badLearner.trainOnData(inputXlsx.getTaggedComments(Sheet.BAD));
     }
 
     private void uploadCsv(final MultipartFile myFile) throws Exception {
         HappinessIndexInputFile inputCsv = readData(myFile.getInputStream(), myFile.getOriginalFilename());
         inputFileProvider.setCurrentInputFile(inputCsv);
-        happinessKeywordsLearner.trainOnData(inputCsv);
+        goodLearner.trainOnData(inputCsv.getTaggedComments(Sheet.GOOD));
     }
 
 
@@ -77,6 +93,6 @@ public class FileUploadController {
         String[] header = csvReader.readNext();
         final List<String[]> allValues = csvReader.readAll();
         reader.close();
-        return new HappinessIndexInputFile(header, allValues, HappinessIndexInputFile.Type.CSV, null, fileName);
+        return new HappinessIndexInputFile(header, Collections.singletonMap(Sheet.GOOD, allValues), HappinessIndexInputFile.Type.CSV, null, fileName);
     }
 }
